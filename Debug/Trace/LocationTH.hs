@@ -76,12 +76,13 @@ __LOCATION__ = lift =<< (render . pprLoc) `fmap` location
 assert :: Q Exp -> Q Exp
 assert t = do
     st <- pprint `fmap` t
-    [|
-        \cont -> if not $t
-            then throw $ AssertionFailed $
-                $__LOCATION__ ++ ": Assertion `" ++ st ++ "' failed"
-            else cont
+    [| if' (not $t) $ throw $ AssertionFailed $
+        $__LOCATION__ ++ ": Assertion `" ++ st ++ "' failed"
      |]
+
+if' :: Bool -> a -> a -> a
+if' True  x _ = x
+if' False _ y = y
 
 --
 -- | A location-emitting 'error' call.
@@ -92,7 +93,7 @@ assert t = do
 -- *** Exception: <interactive>:1:1-8: no such thing.
 --
 failure :: Q Exp
-failure = [| \t -> error $ $__LOCATION__ ++ ": " ++ t |]
+failure = [| error . ($__LOCATION__ ++) . (": " ++) |]
 
 --
 -- | A location-emitting 'undefined'.
@@ -121,6 +122,8 @@ undef = [| $failure "undefined" |]
 --
 -- >>> $check $ Just $ head ""
 -- Just *** Exception: Prelude.head: empty list
+-- >>> Just $ $check $ head ""
+-- Just *** Exception: <interactive>:9:8-13: Prelude.head: empty list
 -- >>> $check $ join deepseq $ Just $ head ""
 -- *** Exception: <interactive>:1:1-6: Prelude.head: empty list
 --
@@ -138,7 +141,7 @@ check = [| unsafePerformIO . $checkIO . C.evaluate |]
 -- "*** Exception: <interactive>:1:1-8: /foo: openFile: does not exist (No such file or directory)
 --
 checkIO :: Q Exp
-checkIO = [| \a -> C.catch a $ \e -> return $ $failure (showEx e) |]
+checkIO = [| flip C.catch (return . $failure . showEx) |]
 
 showEx :: C.SomeException -> String
 showEx = show
