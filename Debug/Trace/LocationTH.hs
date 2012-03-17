@@ -20,6 +20,8 @@ module Debug.Trace.LocationTH
     , undef
     , check
     , checkIO
+    , checkTrace
+    , checkTraceIO
     ) where
 
 import qualified Control.Exception as C
@@ -148,6 +150,35 @@ checkIO = [| checkIO' $__LOCATION__ |]
 checkIO' :: String -> IO a -> IO a
 checkIO' loc a = C.catch a $ \e -> return $ failure' loc (showEx e)
 
+--
+-- | 'checkTrace' extends 'check' with the ability to add a custom string
+-- to the error message.
+--
+-- @$checkTrace :: String -> c -> c@
+--
+-- >>> $checkTrace "XXX" $ head []
+-- *** Exception: <interactive>:1:1-6 XXX: Prelude.head: empty list
+--
+checkTrace :: Q Exp
+checkTrace = [| checkTrace' $__LOCATION__ |]
+
+checkTrace' :: String -> String -> a -> a
+checkTrace' loc t = unsafePerformIO . checkTraceIO' loc t . C.evaluate
+
+--
+-- | 'checkTraceIO' extends 'checkIO' with the ability to add a custom
+-- string to the error message.
+--
+-- @$checkTraceIO :: String -> IO a -> IO a@
+--
+-- >>> $checkTraceIO "XXX" $ readFile "/foo"
+-- "*** Exception: <interactive>:1:1-8 XXX: /foo: openFile: does not exist (No such file or directory)
+--
+checkTraceIO :: Q Exp
+checkTraceIO = [| checkTraceIO' $__LOCATION__ |]
+
+checkTraceIO' :: String -> String -> IO a -> IO a
+checkTraceIO' loc t = checkIO' (loc ++ " " ++ t)
 
 showEx :: C.SomeException -> String
 showEx = show
