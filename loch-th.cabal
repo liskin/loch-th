@@ -1,5 +1,5 @@
 Name:                loch-th
-Version:             0.2
+Version:             0.2.1
 Synopsis:            Support for precise error locations in source files (Template Haskell version)
 Description:         This module provides a Template Haskell based mechanism to
 		     tag failures with the location of the failure call. The
@@ -12,8 +12,8 @@ Author:              Tomas Janousek
 Maintainer:          tomi@nomi.cz
 Category:            Development
 Build-type:          Simple
-Cabal-version:       >=1.2
+Cabal-version:       >=1.6
 
 Library
   Exposed-modules:     Debug.Trace.LocationTH
-  Build-depends:       base >=4 && <5, template-haskell, pretty
+  Build-depends:       base == 4.*, template-haskell, pretty
