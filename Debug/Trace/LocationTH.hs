@@ -29,6 +29,7 @@ import Control.Exception (throw, AssertionFailed(..))
 import Language.Haskell.TH.Ppr (pprint)
 import Language.Haskell.TH.Syntax (location, Loc(..), Q, Exp, lift)
 import System.IO.Unsafe  (unsafePerformIO)
+import qualified Text.PrettyPrint.HughesPJ as PP
 import Text.PrettyPrint.HughesPJ
 
 ppUnless :: Bool -> Doc -> Doc
@@ -41,16 +42,16 @@ pprLoc (Loc { loc_filename = src_path
             , loc_start = (sline, start_col)
             , loc_end = (eline, end_col) })
     | sline == eline = hcat
-        [ text src_path <> colon
+        [ text src_path PP.<> colon
         , int sline, char ':', int start_col
         , ppUnless (end_col - start_col <= 1)
-                   (char '-' <> int (end_col-1))
+                   (char '-' PP.<> int (end_col-1))
         ]
     | otherwise = hcat
-        [ text src_path <> colon
-        , parens (int sline <> char ',' <>  int start_col)
+        [ text src_path PP.<> colon
+        , parens (int sline PP.<> char ',' PP.<>  int start_col)
         , char '-'
-        , parens (int eline <> char ',' <>
+        , parens (int eline PP.<> char ',' PP.<>
             if end_col == 0 then int end_col else int (end_col-1))
         ]
 
