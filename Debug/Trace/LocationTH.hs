@@ -10,7 +10,7 @@
 -- This module provides a Template Haskell based mechanism to tag failures
 -- with the location of the failure call. The location message includes the
 -- file name, line and column numbers.
--- 
+--
 
 {-# LANGUAGE TemplateHaskell #-}
 module Debug.Trace.LocationTH
@@ -59,7 +59,7 @@ pprLoc (Loc { loc_filename = src_path
 --
 -- @$__LOCATION__ :: 'String'@
 --
--- >>> $__LOCATION__ 
+-- >>> $__LOCATION__
 -- "<interactive>:1:1-13"
 --
 __LOCATION__ :: Q Exp
@@ -68,7 +68,7 @@ __LOCATION__ = lift =<< (render . pprLoc) `fmap` location
 --
 -- | If the first argument evaluates to 'True', then the result is the second
 -- argument. Otherwise an 'AssertionFailed' exception is raised, containing a
--- 'String' with the source file and line number of the call to 'assert'. 
+-- 'String' with the source file and line number of the call to 'assert'.
 --
 -- @$(assert [| 'False' |]) :: a -> a@
 --
@@ -117,7 +117,7 @@ undef = [| $failure "undefined" |]
 -- message.
 --
 -- @$check :: c -> c@
--- 
+--
 -- >>> $check $ head []
 -- *** Exception: <interactive>:1:1-6: Prelude.head: empty list
 --
