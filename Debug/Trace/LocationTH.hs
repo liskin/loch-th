@@ -10,7 +10,7 @@
 -- This module provides a Template Haskell based mechanism to tag failures
 -- with the location of the failure call. The location message includes the
 -- file name, line and column numbers.
--- 
+--
 
 {-# LANGUAGE TemplateHaskell #-}
 module Debug.Trace.LocationTH
@@ -29,6 +29,7 @@ import Control.Exception (throw, AssertionFailed(..))
 import Language.Haskell.TH.Ppr (pprint)
 import Language.Haskell.TH.Syntax (location, Loc(..), Q, Exp, lift)
 import System.IO.Unsafe  (unsafePerformIO)
+import qualified Text.PrettyPrint.HughesPJ as PP
 import Text.PrettyPrint.HughesPJ
 
 ppUnless :: Bool -> Doc -> Doc
@@ -41,16 +42,16 @@ pprLoc (Loc { loc_filename = src_path
             , loc_start = (sline, start_col)
             , loc_end = (eline, end_col) })
     | sline == eline = hcat
-        [ text src_path <> colon
+        [ text src_path PP.<> colon
         , int sline, char ':', int start_col
         , ppUnless (end_col - start_col <= 1)
-                   (char '-' <> int (end_col-1))
+                   (char '-' PP.<> int (end_col-1))
         ]
     | otherwise = hcat
-        [ text src_path <> colon
-        , parens (int sline <> char ',' <>  int start_col)
+        [ text src_path PP.<> colon
+        , parens (int sline PP.<> char ',' PP.<>  int start_col)
         , char '-'
-        , parens (int eline <> char ',' <>
+        , parens (int eline PP.<> char ',' PP.<>
             if end_col == 0 then int end_col else int (end_col-1))
         ]
 
@@ -59,7 +60,7 @@ pprLoc (Loc { loc_filename = src_path
 --
 -- @$__LOCATION__ :: 'String'@
 --
--- >>> $__LOCATION__ 
+-- >>> $__LOCATION__
 -- "<interactive>:1:1-13"
 --
 __LOCATION__ :: Q Exp
@@ -68,7 +69,7 @@ __LOCATION__ = lift =<< (render . pprLoc) `fmap` location
 --
 -- | If the first argument evaluates to 'True', then the result is the second
 -- argument. Otherwise an 'AssertionFailed' exception is raised, containing a
--- 'String' with the source file and line number of the call to 'assert'. 
+-- 'String' with the source file and line number of the call to 'assert'.
 --
 -- @$(assert [| 'False' |]) :: a -> a@
 --
@@ -117,7 +118,7 @@ undef = [| $failure "undefined" |]
 -- message.
 --
 -- @$check :: c -> c@
--- 
+--
 -- >>> $check $ head []
 -- *** Exception: <interactive>:1:1-6: Prelude.head: empty list
 --
